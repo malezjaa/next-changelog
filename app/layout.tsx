@@ -36,7 +36,13 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Next.js Changelog",
     description: "The latest updates to the Next.js framework",
-    images: [`${getBaseUrl()}siteimage.png`],
+    images: [
+      {
+        url: `${getBaseUrl()}siteimage.png`,
+        width: 1858,
+        height: 931,
+      },
+    ],
   },
 };
 
