@@ -18,22 +18,22 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: {
-      default: 'Next.js Discord Changelog',
-      template: '%s | Next.js Discord Changelog',
+      default: 'Next.js Changelog',
+      template: '%s | Next.js Changelog',
     },
     description: 'The latest updates to the Next.js framework',
     type: 'website',
     url: getBaseUrl(),
     images: [
-        "/public/siteimage.png"
+        `${getBaseUrl()}/public/siteimage.png`
     ]
   },
   twitter: {
     card: 'summary',
-    title: 'Next.js Discord Changelog',
+    title: 'Next.js Changelog',
     description: 'The latest updates to the Next.js framework',
     images: [
-      "/public/siteimage.png"
+      `${getBaseUrl()}/public/siteimage.png`
     ]
   },
 }
