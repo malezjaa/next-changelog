@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     type: 'website',
     url: getBaseUrl(),
     images: [
-        `${getBaseUrl()}/public/siteimage.png`
+        `${getBaseUrl()}siteimage.png`
     ]
   },
   twitter: {
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     title: 'Next.js Changelog',
     description: 'The latest updates to the Next.js framework',
     images: [
-      `${getBaseUrl()}/public/siteimage.png`
+      `${getBaseUrl()}siteimage.png`
     ]
   },
 }
