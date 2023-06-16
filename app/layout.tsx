@@ -24,13 +24,6 @@ export const metadata: Metadata = {
     description: "The latest updates to the Next.js framework",
     type: "website",
     url: getBaseUrl(),
-    images: [
-      {
-        url: `${getBaseUrl()}siteimage.png`,
-        width: 1858,
-        height: 931,
-      },
-    ],
   },
   twitter: {
     card: "summary",
