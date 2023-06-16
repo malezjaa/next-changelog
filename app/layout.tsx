@@ -24,6 +24,9 @@ export const metadata: Metadata = {
     description: 'The latest updates to the Next.js framework',
     type: 'website',
     url: getBaseUrl(),
+    images: [
+        "/siteimage.png"
+    ]
   },
   twitter: {
     card: 'summary',
