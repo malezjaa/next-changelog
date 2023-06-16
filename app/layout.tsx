@@ -25,13 +25,16 @@ export const metadata: Metadata = {
     type: 'website',
     url: getBaseUrl(),
     images: [
-        "/siteimage.png"
+        "/public/siteimage.png"
     ]
   },
   twitter: {
     card: 'summary',
     title: 'Next.js Discord Changelog',
     description: 'The latest updates to the Next.js framework',
+    images: [
+      "/public/siteimage.png"
+    ]
   },
 }
 
