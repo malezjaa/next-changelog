@@ -42,7 +42,7 @@ export default async function FrameworkReleases() {
                   rel={"nofollow"}
                   target={"blank"}
                 >
-                  {release.target_commitish.substring(0, 6)}
+                  {release.target_commitish.startsWith("canary") ? release.target_commitish : release.target_commitish.substring(0, 6)}
                 </Link>
               </p>
             </div>
@@ -65,8 +65,27 @@ export default async function FrameworkReleases() {
 
                         return <li>{newText}</li>
                     },
-                }}
+                    p: ({ children }: any) => {
+                        const text = children[0];
+                        const newText = text.split(' ').map((word: string)=> {
+                            if (word.startsWith('@')) {
+                                if (word.endsWith(',')) {
+                                    return <><Link key={word} href={`https://github.com/${word.slice(0, -1).replaceAll("@", "")}`} rel={"nofollow"} target={"_blank"}>
+                                        <span className={"text-blue-500"}>{word.slice(0, -1)}</span>
+                                    </Link>,</>
+                                } else {
+                                    return <Link key={word} href={`https://github.com/${word.replaceAll("@", "")}`} rel={"nofollow"} target={"_blank"}>
+                                        <span className={"text-blue-500"}>{word}</span>
+                                    </Link>
+                                }
+                            } else {
+                                return word;
+                            }
+                        }).reduce((acc: React.ReactNode, curr: React.ReactNode) => <>{acc} {curr}</>, null);
 
+                        return <p>{newText}</p>
+                    },
+                }}
               >
                 {release.body}
               </ReactMarkdown>
