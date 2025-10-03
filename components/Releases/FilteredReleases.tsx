@@ -4,9 +4,10 @@ import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
-import { FiExternalLink } from "react-icons/fi";
+import { FiCheck, FiCopy, FiExternalLink } from "react-icons/fi";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ReleaseStats from "@/components/ReleaseStats";
 import type { Release } from "@/utils/api";
 import ReleaseFilter, { type FilterOptions } from "./ReleaseFilter";
 import "./markdown.css";
@@ -89,30 +90,68 @@ const CustomParagraph = ({ children }: any) => {
   return <p>{transformed}</p>;
 };
 
-const ReleaseCard = ({ release }: { release: Release }) => {
+const ReleaseCard = ({
+  release,
+  isLatest,
+}: {
+  release: Release;
+  isLatest?: boolean;
+}) => {
+  const [copied, setCopied] = useState(false);
   const releaseType = getReleaseType(release);
   const badgeClass =
     releaseType === "stable" ? "badge-success" : "badge-warning";
 
-  return (
-    <div className="flex flex-col justify-center w-full h-full p-4 border-accent2 border rounded-lg bg-dark relative">
-      <div className="absolute top-2 right-2">
-        <span className={`badge badge-sm ${badgeClass}`}>
-          {releaseType.toUpperCase()}
-        </span>
-      </div>
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(release.body);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
 
-      <div className="flex flex-row justify-between pr-16">
-        <h3 className="text-xl font-bold">{release.name}</h3>
-        <Link
-          href={release.html_url}
-          rel="nofollow"
-          target="_blank"
-          aria-label="Go to release"
-          title="Go to release"
-        >
-          <FiExternalLink className="w-5 h-5 cursor-pointer" />
-        </Link>
+  return (
+    <div className="flex flex-col justify-center w-full h-full p-4 border-accent2 border rounded-lg bg-dark hover:border-gray-600 transition-all duration-200">
+      <div className="flex flex-row justify-between items-start">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xl font-bold mb-2">{release.name}</h3>
+          <div className="flex gap-2 flex-wrap">
+            {isLatest && (
+              <span className="badge badge-sm badge-primary animate-pulse">
+                🌟 LATEST
+              </span>
+            )}
+            <span className={`badge badge-sm ${badgeClass}`}>
+              {releaseType.toUpperCase()}
+            </span>
+          </div>
+        </div>
+        <div className="flex gap-2 ml-4 flex-shrink-0">
+          <button
+            onClick={copyToClipboard}
+            className="btn btn-ghost btn-xs"
+            aria-label="Copy release notes"
+            title="Copy release notes"
+            type="button"
+          >
+            {copied ? (
+              <FiCheck className="w-4 h-4 text-green-500" />
+            ) : (
+              <FiCopy className="w-4 h-4" />
+            )}
+          </button>
+          <Link
+            href={release.html_url}
+            rel="nofollow"
+            target="_blank"
+            aria-label="Go to release"
+            title="Go to release"
+          >
+            <FiExternalLink className="w-5 h-5 cursor-pointer hover:text-blue-400 transition-colors" />
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-row flex-wrap items-center mt-3">
@@ -273,6 +312,8 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
+      <ReleaseStats releases={releases} />
+
       <ReleaseFilter onFilterChange={handleFilterChange} />
 
       {filteredReleases.length > 0 && (
@@ -287,8 +328,12 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
         ) : (
           <>
             <div className="flex flex-col gap-6">
-              {paginatedReleases.map((release) => (
-                <ReleaseCard key={release.id} release={release} />
+              {paginatedReleases.map((release, index) => (
+                <ReleaseCard
+                  key={release.id}
+                  release={release}
+                  isLatest={currentPage === 1 && index === 0}
+                />
               ))}
             </div>
 
