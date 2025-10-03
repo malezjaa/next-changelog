@@ -1,27 +1,31 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState, useEffect } from "react";
 
 export interface FilterOptions {
-  showStable: boolean
-  showCanary: boolean
+  showStable: boolean;
+  showCanary: boolean;
 }
 
 interface ReleaseFilterProps {
-  onFilterChange: (filters: FilterOptions) => void
+  onFilterChange: (filters: FilterOptions) => void;
 }
 
 export default function ReleaseFilter({ onFilterChange }: ReleaseFilterProps) {
   const [filters, setFilters] = useState<FilterOptions>({
     showStable: true,
     showCanary: false,
-  })
+  });
+
+  useEffect(() => {
+    onFilterChange(filters);
+  }, []);
 
   const handleFilterChange = (key: keyof FilterOptions) => {
-    const newFilters = { ...filters, [key]: !filters[key] }
-    setFilters(newFilters)
-    onFilterChange(newFilters)
-  }
+    const newFilters = { ...filters, [key]: !filters[key] };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
+  };
 
   return (
     <div className="mb-6">
@@ -34,11 +38,11 @@ export default function ReleaseFilter({ onFilterChange }: ReleaseFilterProps) {
               type="checkbox"
               className="checkbox checkbox-primary"
               checked={filters.showStable}
-              onChange={() => handleFilterChange('showStable')}
+              onChange={() => handleFilterChange("showStable")}
             />
           </label>
         </div>
-        
+
         <div className="form-control">
           <label className="label cursor-pointer">
             <span className="label-text mr-2">Canary</span>
@@ -46,11 +50,11 @@ export default function ReleaseFilter({ onFilterChange }: ReleaseFilterProps) {
               type="checkbox"
               className="checkbox checkbox-warning"
               checked={filters.showCanary}
-              onChange={() => handleFilterChange('showCanary')}
+              onChange={() => handleFilterChange("showCanary")}
             />
           </label>
         </div>
       </div>
     </div>
-  )
+  );
 }
