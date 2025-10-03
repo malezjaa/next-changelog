@@ -1,40 +1,245 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import ReleaseFilter, { FilterOptions } from "./ReleaseFilter";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import Link from "next/link";
 import moment from "moment";
 import Image from "next/image";
-import React from "react";
+import Link from "next/link";
+import React, { useMemo, useState } from "react";
 import { FiExternalLink } from "react-icons/fi";
-import { Release } from "@/utils/api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import type { Release } from "@/utils/api";
+import ReleaseFilter, { type FilterOptions } from "./ReleaseFilter";
 import "./markdown.css";
+import { generatePageNumbers } from "@/utils/pagination";
+import { formatCommitHash, getReleaseType } from "@/utils/releases";
 
 interface FilteredReleasesProps {
   releases: Release[];
 }
 
-const getReleaseType = (release: Release): string => {
-  const tagName = release.tag_name.toLowerCase();
-  const name = release.name.toLowerCase();
+const transformTextWithLinks = (
+  text: string,
+  linkPattern: RegExp,
+  getLinkProps: (match: string) => { href: string; text: string },
+): React.ReactNode => {
+  const words = text.split(" ");
 
-  if (tagName.includes("canary") || name.includes("canary")) return "canary";
+  return words.reduce<React.ReactNode>((acc, word, idx) => {
+    const match = word.match(linkPattern);
+    let element: React.ReactNode = word;
 
-  if (
-    release.prerelease ||
-    tagName.includes("alpha") ||
-    tagName.includes("beta") ||
-    tagName.includes("rc") ||
-    name.includes("alpha") ||
-    name.includes("beta") ||
-    name.includes("rc")
-  )
-    return "canary";
+    if (match) {
+      const { href } = getLinkProps(word);
+      const hasComma = word.endsWith(",");
+      const cleanWord = hasComma ? word.slice(0, -1) : word;
 
-  return "stable";
+      element = (
+        <React.Fragment key={cleanWord}>
+          <Link href={href} rel="nofollow" target="_blank">
+            <span className="text-blue-500">{hasComma ? cleanWord : word}</span>
+          </Link>
+          {hasComma && ","}
+        </React.Fragment>
+      );
+    }
+
+    return idx === 0 ? (
+      element
+    ) : (
+      <>
+        {acc} {element}
+      </>
+    );
+  }, null);
 };
+
+const CustomListItem = ({ children }: any) => {
+  if (
+    !Array.isArray(children) ||
+    children.length === 0 ||
+    typeof children[0] !== "string"
+  ) {
+    return <li>{children}</li>;
+  }
+
+  const text = children[0];
+  const transformed = transformTextWithLinks(text, /#\d+/, (word) => ({
+    href: `https://github.com/vercel/next.js/pull/${word.replace(/[()#]/g, "")}`,
+    text: word,
+  }));
+
+  return <li>{transformed}</li>;
+};
+
+const CustomParagraph = ({ children }: any) => {
+  if (
+    !Array.isArray(children) ||
+    children.length === 0 ||
+    typeof children[0] !== "string"
+  ) {
+    return <p>{children}</p>;
+  }
+
+  const text = children[0];
+  const transformed = transformTextWithLinks(text, /@\w+/, (word) => ({
+    href: `https://github.com/${word.replace(/[@(),]/g, "")}`,
+    text: word,
+  }));
+
+  return <p>{transformed}</p>;
+};
+
+const ReleaseCard = ({ release }: { release: Release }) => {
+  const releaseType = getReleaseType(release);
+  const badgeClass =
+    releaseType === "stable" ? "badge-success" : "badge-warning";
+
+  return (
+    <div className="flex flex-col justify-center w-full h-full p-4 border-accent2 border rounded-lg bg-dark relative">
+      <div className="absolute top-2 right-2">
+        <span className={`badge badge-sm ${badgeClass}`}>
+          {releaseType.toUpperCase()}
+        </span>
+      </div>
+
+      <div className="flex flex-row justify-between pr-16">
+        <h3 className="text-xl font-bold">{release.name}</h3>
+        <Link
+          href={release.html_url}
+          rel="nofollow"
+          target="_blank"
+          aria-label="Go to release"
+          title="Go to release"
+        >
+          <FiExternalLink className="w-5 h-5 cursor-pointer" />
+        </Link>
+      </div>
+
+      <div className="flex flex-row flex-wrap items-center mt-3">
+        <Image
+          src={release.author.avatar_url}
+          alt="author image"
+          className="w-7 h-7 rounded-full mr-2"
+          width={100}
+          height={100}
+        />
+        <p>
+          <b>{release.author.login}</b> released this{" "}
+          {moment(release.created_at).fromNow()}
+        </p>
+        <p className="ml-2 text-blue-500">
+          <Link
+            href={`https://github.com/vercel/next.js/commit/${release.target_commitish}`}
+            rel="nofollow"
+            target="_blank"
+          >
+            {formatCommitHash(release.target_commitish)}
+          </Link>
+        </p>
+      </div>
+
+      <div className="divider"></div>
+
+      <div className="markdown-body">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            li: CustomListItem,
+            p: CustomParagraph,
+          }}
+        >
+          {release.body}
+        </ReactMarkdown>
+      </div>
+    </div>
+  );
+};
+
+const PaginationButton = ({
+  page,
+  currentPage,
+  onClick,
+}: {
+  page: number | string;
+  currentPage: number;
+  onClick: (page: number) => void;
+}) => {
+  if (typeof page === "string") {
+    return (
+      <span className="join-item btn btn-sm !bg-dark btn-disabled !border-opacity-100">
+        {page}
+      </span>
+    );
+  }
+
+  return (
+    <button
+      className={`join-item btn btn-sm !bg-dark ${currentPage === page ? "text-primary" : ""}`}
+      onClick={() => onClick(page)}
+      type="button"
+    >
+      {page}
+    </button>
+  );
+};
+
+const Pagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) => {
+  if (totalPages <= 1) return null;
+
+  const pageNumbers = generatePageNumbers(currentPage, totalPages);
+
+  return (
+    <div className="flex justify-center mt-8">
+      <div className="join">
+        <button
+          className="join-item btn btn-sm !bg-dark"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          type="button"
+        >
+          «
+        </button>
+
+        {pageNumbers.map((page, idx) => (
+          <PaginationButton
+            key={typeof page === "string" ? `ellipsis-${idx}` : `page-${page}`}
+            page={page}
+            currentPage={currentPage}
+            onClick={onPageChange}
+          />
+        ))}
+
+        <button
+          className="join-item btn btn-sm !bg-dark"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          type="button"
+        >
+          »
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const EmptyState = () => (
+  <div className="text-center py-8">
+    <p className="text-lg text-gray-400">
+      No releases match the current filter criteria.
+    </p>
+    <p className="text-sm text-gray-500 mt-2">
+      Try enabling more release types in the filter above.
+    </p>
+  </div>
+);
 
 export default function FilteredReleases({ releases }: FilteredReleasesProps) {
   const [filters, setFilters] = useState<FilterOptions>({
@@ -45,38 +250,26 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
   const itemsPerPage = 8;
 
   const filteredReleases = useMemo(() => {
-    const filtered = releases.filter((release) => {
+    return releases.filter((release) => {
       const releaseType = getReleaseType(release);
-
-      switch (releaseType) {
-        case "stable":
-          return filters.showStable;
-        case "canary":
-          return filters.showCanary;
-        default:
-          return filters.showStable;
-      }
+      return releaseType === "stable" ? filters.showStable : filters.showCanary;
     });
-
-    return filtered;
   }, [releases, filters]);
 
   const totalPages = Math.ceil(filteredReleases.length / itemsPerPage);
 
   const paginatedReleases = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredReleases.slice(startIndex, endIndex);
-  }, [filteredReleases, currentPage, itemsPerPage]);
+    return filteredReleases.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredReleases, currentPage]);
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
     setCurrentPage(1);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, filteredReleases.length);
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -84,248 +277,26 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
 
       {filteredReleases.length > 0 && (
         <div className="text-sm text-gray-400 mb-4">
-          Showing {(currentPage - 1) * itemsPerPage + 1}-
-          {Math.min(currentPage * itemsPerPage, filteredReleases.length)} of{" "}
-          {filteredReleases.length} releases
+          Showing {startItem}-{endItem} of {filteredReleases.length} releases
         </div>
       )}
 
       <div className="w-full min-h-[400px]">
         {filteredReleases.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-lg text-gray-400">
-              No releases match the current filter criteria.
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              Try enabling more release types in the filter above.
-            </p>
-          </div>
+          <EmptyState />
         ) : (
           <>
             <div className="flex flex-col gap-6">
               {paginatedReleases.map((release) => (
-                <div
-                  key={release.id}
-                  className="flex flex-col justify-center w-full h-full p-4 border-accent2 border rounded-lg bg-dark relative"
-                >
-                  <div className="absolute top-2 right-2">
-                    <span
-                      className={`badge badge-sm ${
-                        getReleaseType(release) === "stable"
-                          ? "badge-success"
-                          : "badge-warning"
-                      }`}
-                    >
-                      {getReleaseType(release).toUpperCase()}
-                    </span>
-                  </div>
-
-                  <div className={"flex flex-row justify-between pr-16"}>
-                    <h3 className={"text-xl font-bold"}>{release.name}</h3>
-                    <Link
-                      href={release.html_url}
-                      rel={"nofollow"}
-                      target={"_blank"}
-                      aria-label={"Go to release"}
-                      title={"Go to release"}
-                    >
-                      <FiExternalLink className={"w-5 h-5 cursor-pointer"} />
-                    </Link>
-                  </div>
-                  <div className={"flex flex-row flex-wrap items-center mt-3"}>
-                    <Image
-                      src={release.author.avatar_url}
-                      alt={"author image"}
-                      className={"w-7 h-7 rounded-full mr-2"}
-                      width={100}
-                      height={100}
-                    />
-                    <p>
-                      <b>{release.author.login}</b> released this{" "}
-                      {moment(release.created_at).fromNow()}
-                    </p>
-                    <p className={"ml-2 text-blue-500"}>
-                      <Link
-                        href={`https://github.com/vercel/next.js/commit/${release.target_commitish}`}
-                        rel={"nofollow"}
-                        target={"blank"}
-                      >
-                        {release.target_commitish.startsWith("canary")
-                          ? release.target_commitish
-                          : release.target_commitish.substring(0, 6)}
-                      </Link>
-                    </p>
-                  </div>
-                  <div className="divider"></div>
-                  <div className={"markdown-body"}>
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        li: ({ children }: any) => {
-                          if (
-                            !children ||
-                            !Array.isArray(children) ||
-                            children.length === 0
-                          ) {
-                            return <li>{children}</li>;
-                          }
-
-                          const text = children[0];
-                          if (typeof text !== "string") {
-                            return <li>{children}</li>;
-                          }
-
-                          const newText = text
-                            .split(" ")
-                            .map((word: string, index: number) => {
-                              if (word.startsWith("#")) {
-                                return (
-                                  <Link
-                                    key={`${word}-${index}`}
-                                    href={`https://github.com/vercel/next.js/pull/${word.replaceAll("#", "")}`}
-                                    rel={"nofollow"}
-                                    target={"_blank"}
-                                  >
-                                    <span className={"text-blue-500"}>
-                                      {word}
-                                    </span>
-                                  </Link>
-                                );
-                              } else {
-                                return word;
-                              }
-                            })
-                            .reduce(
-                              (
-                                acc: React.ReactNode,
-                                curr: React.ReactNode,
-                                index: number,
-                              ) =>
-                                index === 0 ? (
-                                  curr
-                                ) : (
-                                  <>
-                                    {acc} {curr}
-                                  </>
-                                ),
-                              null,
-                            );
-
-                          return <li>{newText}</li>;
-                        },
-                        p: ({ children }: any) => {
-                          if (
-                            !children ||
-                            !Array.isArray(children) ||
-                            children.length === 0
-                          ) {
-                            return <p>{children}</p>;
-                          }
-
-                          const text = children[0];
-                          if (typeof text !== "string") {
-                            return <p>{children}</p>;
-                          }
-
-                          const newText = text
-                            .split(" ")
-                            .map((word: string, index: number) => {
-                              if (word.startsWith("@")) {
-                                if (word.endsWith(",")) {
-                                  return (
-                                    <React.Fragment key={`${word}-${index}`}>
-                                      <Link
-                                        href={`https://github.com/${word.slice(0, -1).replaceAll("@", "")}`}
-                                        rel={"nofollow"}
-                                        target={"_blank"}
-                                      >
-                                        <span className={"text-blue-500"}>
-                                          {word.slice(0, -1)}
-                                        </span>
-                                      </Link>
-                                      ,
-                                    </React.Fragment>
-                                  );
-                                } else {
-                                  return (
-                                    <Link
-                                      key={`${word}-${index}`}
-                                      href={`https://github.com/${word.replaceAll("@", "")}`}
-                                      rel={"nofollow"}
-                                      target={"_blank"}
-                                    >
-                                      <span className={"text-blue-500"}>
-                                        {word}
-                                      </span>
-                                    </Link>
-                                  );
-                                }
-                              } else {
-                                return word;
-                              }
-                            })
-                            .reduce(
-                              (
-                                acc: React.ReactNode,
-                                curr: React.ReactNode,
-                                index: number,
-                              ) =>
-                                index === 0 ? (
-                                  curr
-                                ) : (
-                                  <>
-                                    {acc} {curr}
-                                  </>
-                                ),
-                              null,
-                            );
-
-                          return <p>{newText}</p>;
-                        },
-                      }}
-                    >
-                      {release.body}
-                    </ReactMarkdown>
-                  </div>
-                </div>
+                <ReleaseCard key={release.id} release={release} />
               ))}
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-8">
-                <div className="join">
-                  <button
-                    className="join-item btn btn-sm !bg-dark"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    «
-                  </button>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        className={`join-item btn btn-sm !bg-dark ${
-                          currentPage === page ? "btn-active" : ""
-                        }`}
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </button>
-                    ),
-                  )}
-
-                  <button
-                    className="join-item btn btn-sm !bg-dark"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    »
-                  </button>
-                </div>
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </>
         )}
       </div>
