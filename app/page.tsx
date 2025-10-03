@@ -15,9 +15,9 @@ export default function Page() {
                 </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center mt-[4rem] w-full">
-                <h2 className={"font-extrabold text-[2rem] sm:text-[3rem] text-center"}>Framework</h2>
-                <div className={"flex flex-col gap-4 p-2 sm:p-10"}>
+            <div className="flex flex-col items-center justify-center mt-[4rem] w-full max-w-7xl mx-auto">
+                <h2 className={"font-extrabold text-[2rem] sm:text-[3rem] text-center mb-8"}>Framework</h2>
+                <div className="w-full px-4">
                     <FrameworkReleases/>
                 </div>
             </div>
