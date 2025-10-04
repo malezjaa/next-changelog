@@ -20,7 +20,7 @@ import type { Release } from "@/utils/api";
 import ReleaseFilter, { type FilterOptions } from "./ReleaseFilter";
 import "./markdown.css";
 import { generatePageNumbers } from "@/utils/pagination";
-import { formatCommitHash, getReleaseType } from "@/utils/releases";
+import { getReleaseType } from "@/utils/releases";
 
 interface FilteredReleasesProps {
   releases: Release[];
