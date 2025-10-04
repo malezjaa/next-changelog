@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export interface FilterOptions {
   showStable: boolean;
@@ -19,7 +19,7 @@ export default function ReleaseFilter({ onFilterChange }: ReleaseFilterProps) {
 
   useEffect(() => {
     onFilterChange(filters);
-  }, []);
+  }, [filters, onFilterChange]);
 
   const handleFilterChange = (key: keyof FilterOptions) => {
     const newFilters = { ...filters, [key]: !filters[key] };

@@ -17,7 +17,3 @@ export const getReleaseType = (release: Release): "stable" | "canary" => {
 
   return isCanary ? "canary" : "stable";
 };
-
-export const formatCommitHash = (hash: string): string => {
-  return hash.startsWith("canary") ? hash : hash.substring(0, 6);
-};

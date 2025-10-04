@@ -174,15 +174,15 @@ const ReleaseCard = ({
           <b>{release.author.login}</b> released this{" "}
           {moment(release.created_at).fromNow()}
         </p>
-        <p className="ml-2 text-blue-500">
-          <Link
-            href={`https://github.com/vercel/next.js/commit/${release.target_commitish}`}
-            rel="nofollow"
-            target="_blank"
-          >
-            {formatCommitHash(release.target_commitish)}
-          </Link>
-        </p>
+        {/*<p className="ml-2 text-blue-500">*/}
+        {/*  <Link*/}
+        {/*    href={`https://github.com/vercel/next.js/commit/${release.target_commitish}`}*/}
+        {/*    rel="nofollow"*/}
+        {/*    target="_blank"*/}
+        {/*  >*/}
+        {/*    {formatCommitHash(release.target_commitish)}*/}
+        {/*  </Link>*/}
+        {/*</p>*/}
       </div>
 
       <div className="divider"></div>
@@ -434,7 +434,7 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by version (e.g. 13, 13.4, v13.4.6)..."
+              placeholder="Search by version (e.g. 15, 15.5.4)..."
               value={searchInput}
               onChange={handleSearchChange}
               className="input input-bordered input-sm w-full pl-9 bg-dark focus:outline-none focus:border-primary h-8"
