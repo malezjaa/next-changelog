@@ -2,6 +2,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
+import ScrollToTop from "@/components/ScrollToTop";
 import { getBaseUrl } from "@/utils/urls";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -44,12 +45,40 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Next.js Changelog",
+    description: "The latest updates to the Next.js framework",
+    url: getBaseUrl(),
+    publisher: {
+      "@type": "Organization",
+      name: "Next.js Changelog",
+      url: getBaseUrl(),
+    },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${getBaseUrl()}?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      </head>
       <body className={`${inter.className}`}>
         <Navbar />
 
         <div className="w-full">{children}</div>
+        <ScrollToTop />
       </body>
     </html>
   );
