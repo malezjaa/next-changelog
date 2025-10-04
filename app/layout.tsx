@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import ScrollToTop from "@/components/ScrollToTop";
 import { getBaseUrl } from "@/utils/urls";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -75,6 +76,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className}`}>
+        <Analytics />
         <Navbar />
 
         <div className="w-full">{children}</div>

@@ -7,6 +7,7 @@
         "@types/node": "20.3.1",
         "@types/react": "18.2.12",
         "@types/react-dom": "18.2.5",
+        "@vercel/analytics": "^1.5.0",
         "autoprefixer": "10.4.14",
         "axios": "^1.12.2",
         "eslint": "8.42.0",
@@ -145,6 +146,8 @@
     "@typescript-eslint/typescript-estree": ["@typescript-eslint/typescript-estree@5.59.11", "", { "dependencies": { "@typescript-eslint/types": "5.59.11", "@typescript-eslint/visitor-keys": "5.59.11", "debug": "^4.3.4", "globby": "^11.1.0", "is-glob": "^4.0.3", "semver": "^7.3.7", "tsutils": "^3.21.0" } }, "sha512-YupOpot5hJO0maupJXixi6l5ETdrITxeo5eBOeuV7RSKgYdU3G5cxO49/9WRnJq9EMrB7AuTSLH/bqOsXi7wPA=="],
 
     "@typescript-eslint/visitor-keys": ["@typescript-eslint/visitor-keys@5.59.11", "", { "dependencies": { "@typescript-eslint/types": "5.59.11", "eslint-visitor-keys": "^3.3.0" } }, "sha512-KGYniTGG3AMTuKF9QBD7EIrvufkB6O6uX3knP73xbKLMpH+QRPcgnCxjWXSHjMRuOxFLovljqQgQpR0c7GvjoA=="],
+
+    "@vercel/analytics": ["@vercel/analytics@1.5.0", "", { "peerDependencies": { "@remix-run/react": "^2", "@sveltejs/kit": "^1 || ^2", "next": ">= 13", "react": "^18 || ^19 || ^19.0.0-rc", "svelte": ">= 4", "vue": "^3", "vue-router": "^4" }, "optionalPeers": ["@remix-run/react", "@sveltejs/kit", "next", "react", "svelte", "vue", "vue-router"] }, "sha512-MYsBzfPki4gthY5HnYN7jgInhAZ7Ac1cYDoRWFomwGHWEX7odTEzbtg9kf/QSo7XEsEAqlQugA6gJ2WS2DEa3g=="],
 
     "acorn": ["acorn@8.9.0", "", { "bin": "bin/acorn" }, "sha512-jaVNAFBHNLXspO543WnNNPZFRtavh3skAkITqD0/2aeMkKZTN+254PyhwxFYrk3vQ1xfY+2wbesJMs/JC8/PwQ=="],
 
