@@ -2,7 +2,6 @@ import { getNextJsReleases } from "@/utils/api";
 import FilteredReleases from "./FilteredReleases";
 
 export const revalidate = 300;
-export const dynamic = "force-static";
 
 export default async function FrameworkReleases() {
   try {
