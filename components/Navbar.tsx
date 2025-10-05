@@ -7,7 +7,10 @@ export default function Navbar() {
   return (
     <div className="navbar bg-black border-b border-gray-800 sticky top-0 z-40 backdrop-blur-sm bg-opacity-95">
       <div className="navbar-start">
-        <Link href={"/"} className="flex normal-case text-xl ml-3 hover:scale-105 transition-transform duration-200">
+        <Link
+          href={"/"}
+          className="flex normal-case text-xl ml-3 hover:scale-105 transition-transform duration-200"
+        >
           <NextJsIcon />
         </Link>
       </div>

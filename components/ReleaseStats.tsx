@@ -114,7 +114,9 @@ export default function ReleaseStats({ releases }: StatsProps) {
             </svg>
           </div>
           <div className="stat-title">Latest Release</div>
-          <div className="stat-value text-info text-xl lg:text-2xl truncate">{stats.latest}</div>
+          <div className="stat-value text-info text-xl lg:text-2xl truncate">
+            {stats.latest}
+          </div>
           <div className="stat-desc truncate">{stats.latestDate}</div>
         </div>
       </div>
