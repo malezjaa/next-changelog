@@ -3,7 +3,13 @@
 import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import {
   FiArrowDown,
   FiArrowUp,
@@ -98,184 +104,186 @@ const CustomParagraph = ({ children }: any) => {
   return <p>{transformed}</p>;
 };
 
-const ReleaseCard = ({
-  release,
-  isLatest,
-}: {
-  release: Release;
-  isLatest?: boolean;
-}) => {
-  const [copied, setCopied] = useState(false);
-  const releaseType = getReleaseType(release);
-  const badgeClass =
-    releaseType === "stable" ? "badge-success" : "badge-warning";
+const ReleaseCard = React.memo(
+  ({ release, isLatest }: { release: Release; isLatest?: boolean }) => {
+    const [copied, setCopied] = useState(false);
+    const releaseType = getReleaseType(release);
+    const badgeClass =
+      releaseType === "stable" ? "badge-success" : "badge-warning";
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(release.body);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
+    const copyToClipboard = async () => {
+      try {
+        await navigator.clipboard.writeText(release.body);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
+    };
 
-  return (
-    <div className="flex flex-col justify-center w-full h-full p-4 border-accent2 border rounded-lg bg-dark hover:border-gray-600 transition-all duration-200">
-      <div className="flex flex-row justify-between items-start">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-xl font-bold mb-2">{release.name}</h3>
-          <div className="flex gap-2 flex-wrap">
-            {isLatest && (
-              <span className="badge badge-sm badge-primary animate-pulse">
-                🌟 LATEST
+    return (
+      <div className="flex flex-col justify-center w-full h-full p-4 border-accent2 border rounded-lg bg-dark hover:border-gray-600 transition-all duration-200">
+        <div className="flex flex-row justify-between items-start">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xl font-bold mb-2">{release.name}</h3>
+            <div className="flex gap-2 flex-wrap">
+              {isLatest && (
+                <span className="badge badge-sm badge-primary animate-pulse">
+                  🌟 LATEST
+                </span>
+              )}
+              <span className={`badge badge-sm ${badgeClass}`}>
+                {releaseType.toUpperCase()}
               </span>
-            )}
-            <span className={`badge badge-sm ${badgeClass}`}>
-              {releaseType.toUpperCase()}
-            </span>
+            </div>
+          </div>
+          <div className="flex gap-2 ml-4 flex-shrink-0">
+            <button
+              onClick={copyToClipboard}
+              className="btn btn-ghost btn-xs"
+              aria-label="Copy release notes"
+              title="Copy release notes"
+              type="button"
+            >
+              {copied ? (
+                <FiCheck className="w-4 h-4 text-green-500" />
+              ) : (
+                <FiCopy className="w-4 h-4" />
+              )}
+            </button>
+            <Link
+              href={release.html_url}
+              rel="nofollow"
+              target="_blank"
+              aria-label="Go to release"
+              title="Go to release"
+            >
+              <FiExternalLink className="w-5 h-5 cursor-pointer hover:text-blue-400 transition-colors" />
+            </Link>
           </div>
         </div>
-        <div className="flex gap-2 ml-4 flex-shrink-0">
-          <button
-            onClick={copyToClipboard}
-            className="btn btn-ghost btn-xs"
-            aria-label="Copy release notes"
-            title="Copy release notes"
-            type="button"
+
+        <div className="flex flex-row flex-wrap items-center mt-3">
+          <Image
+            src={release.author.avatar_url}
+            alt="author image"
+            className="w-7 h-7 rounded-full mr-2"
+            width={100}
+            height={100}
+          />
+          <p>
+            <b>{release.author.login}</b> released this{" "}
+            {moment(release.created_at).fromNow()}
+          </p>
+          {/*<p className="ml-2 text-blue-500">*/}
+          {/*  <Link*/}
+          {/*    href={`https://github.com/vercel/next.js/commit/${release.target_commitish}`}*/}
+          {/*    rel="nofollow"*/}
+          {/*    target="_blank"*/}
+          {/*  >*/}
+          {/*    {formatCommitHash(release.target_commitish)}*/}
+          {/*  </Link>*/}
+          {/*</p>*/}
+        </div>
+
+        <div className="divider"></div>
+
+        <div className="markdown-body">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              li: CustomListItem,
+              p: CustomParagraph,
+            }}
           >
-            {copied ? (
-              <FiCheck className="w-4 h-4 text-green-500" />
-            ) : (
-              <FiCopy className="w-4 h-4" />
-            )}
-          </button>
-          <Link
-            href={release.html_url}
-            rel="nofollow"
-            target="_blank"
-            aria-label="Go to release"
-            title="Go to release"
-          >
-            <FiExternalLink className="w-5 h-5 cursor-pointer hover:text-blue-400 transition-colors" />
-          </Link>
+            {release.body}
+          </ReactMarkdown>
         </div>
       </div>
-
-      <div className="flex flex-row flex-wrap items-center mt-3">
-        <Image
-          src={release.author.avatar_url}
-          alt="author image"
-          className="w-7 h-7 rounded-full mr-2"
-          width={100}
-          height={100}
-        />
-        <p>
-          <b>{release.author.login}</b> released this{" "}
-          {moment(release.created_at).fromNow()}
-        </p>
-        {/*<p className="ml-2 text-blue-500">*/}
-        {/*  <Link*/}
-        {/*    href={`https://github.com/vercel/next.js/commit/${release.target_commitish}`}*/}
-        {/*    rel="nofollow"*/}
-        {/*    target="_blank"*/}
-        {/*  >*/}
-        {/*    {formatCommitHash(release.target_commitish)}*/}
-        {/*  </Link>*/}
-        {/*</p>*/}
-      </div>
-
-      <div className="divider"></div>
-
-      <div className="markdown-body">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            li: CustomListItem,
-            p: CustomParagraph,
-          }}
-        >
-          {release.body}
-        </ReactMarkdown>
-      </div>
-    </div>
-  );
-};
-
-const PaginationButton = ({
-  page,
-  currentPage,
-  onClick,
-}: {
-  page: number | string;
-  currentPage: number;
-  onClick: (page: number) => void;
-}) => {
-  if (typeof page === "string") {
-    return (
-      <span className="join-item btn btn-sm !bg-dark btn-disabled !border-opacity-100">
-        {page}
-      </span>
     );
-  }
+  },
+);
 
-  return (
-    <button
-      className={`join-item btn btn-sm !bg-dark ${currentPage === page ? "text-primary" : ""}`}
-      onClick={() => onClick(page)}
-      type="button"
-    >
-      {page}
-    </button>
-  );
-};
+const PaginationButton = React.memo(
+  ({
+    page,
+    currentPage,
+    onClick,
+  }: {
+    page: number | string;
+    currentPage: number;
+    onClick: (page: number) => void;
+  }) => {
+    if (typeof page === "string") {
+      return (
+        <span className="join-item btn btn-sm !bg-dark btn-disabled !border-opacity-100">
+          {page}
+        </span>
+      );
+    }
 
-const Pagination = ({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) => {
-  if (totalPages <= 1) return null;
+    return (
+      <button
+        className={`join-item btn btn-sm !bg-dark ${currentPage === page ? "text-primary" : ""}`}
+        onClick={() => onClick(page)}
+        type="button"
+      >
+        {page}
+      </button>
+    );
+  },
+);
 
-  const pageNumbers = generatePageNumbers(currentPage, totalPages);
+const Pagination = React.memo(
+  ({
+    currentPage,
+    totalPages,
+    onPageChange,
+  }: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  }) => {
+    if (totalPages <= 1) return null;
 
-  return (
-    <div className="flex justify-center mt-8">
-      <div className="join">
-        <button
-          className="join-item btn btn-sm !bg-dark"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          type="button"
-        >
-          «
-        </button>
+    const pageNumbers = generatePageNumbers(currentPage, totalPages);
 
-        {pageNumbers.map((page, idx) => (
-          <PaginationButton
-            key={typeof page === "string" ? `ellipsis-${idx}` : `page-${page}`}
-            page={page}
-            currentPage={currentPage}
-            onClick={onPageChange}
-          />
-        ))}
+    return (
+      <div className="flex justify-center mt-8">
+        <div className="join">
+          <button
+            className="join-item btn btn-sm !bg-dark"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            type="button"
+          >
+            «
+          </button>
 
-        <button
-          className="join-item btn btn-sm !bg-dark"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          type="button"
-        >
-          »
-        </button>
+          {pageNumbers.map((page, idx) => (
+            <PaginationButton
+              key={
+                typeof page === "string" ? `ellipsis-${idx}` : `page-${page}`
+              }
+              page={page}
+              currentPage={currentPage}
+              onClick={onPageChange}
+            />
+          ))}
+
+          <button
+            className="join-item btn btn-sm !bg-dark"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            type="button"
+          >
+            »
+          </button>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+);
 
 const EmptyState = ({ searchTerm }: { searchTerm?: string }) => (
   <div className="text-center py-8">
@@ -301,6 +309,7 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
   const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [isPending, startTransition] = useTransition();
   const itemsPerPage = 8;
 
   useEffect(() => {
@@ -311,36 +320,6 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
 
     return () => clearTimeout(timer);
   }, [searchInput]);
-
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-
-      switch (e.key) {
-        case "ArrowRight":
-          if (currentPage < totalPages) {
-            setCurrentPage((prev) => prev + 1);
-          }
-          break;
-        case "ArrowLeft":
-          if (currentPage > 1) {
-            setCurrentPage((prev) => prev - 1);
-          }
-          break;
-        case "Escape":
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentPage]);
 
   const filteredReleases = useMemo(() => {
     let filtered = releases.filter((release) => {
@@ -385,7 +364,7 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
               }
             }
           }
-        } catch (error) {}
+        } catch (_error) {}
 
         return false;
       }
@@ -402,23 +381,69 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
 
   const totalPages = Math.ceil(filteredReleases.length / itemsPerPage);
 
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      if (newPage >= 1 && newPage <= totalPages) {
+        startTransition(() => {
+          setCurrentPage(newPage);
+        });
+      }
+    },
+    [totalPages],
+  );
+
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      switch (e.key) {
+        case "ArrowRight":
+          handlePageChange(currentPage + 1);
+          break;
+        case "ArrowLeft":
+          handlePageChange(currentPage - 1);
+          break;
+        case "Escape":
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          break;
+      }
+    },
+    [currentPage, handlePageChange],
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [handleKeyPress]);
+
   const paginatedReleases = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredReleases.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredReleases, currentPage]);
 
-  const handleFilterChange = (newFilters: FilterOptions) => {
+  const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     setFilters(newFilters);
     setCurrentPage(1);
-  };
+  }, []);
 
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, filteredReleases.length);
 
-  const toggleSortOrder = () => {
+  const toggleSortOrder = useCallback(() => {
     setSortOrder((prev) => (prev === "newest" ? "oldest" : "newest"));
     setCurrentPage(1);
-  };
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
@@ -477,7 +502,9 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
           <EmptyState searchTerm={searchTerm} />
         ) : (
           <>
-            <div className="flex flex-col gap-6">
+            <div
+              className={`flex flex-col gap-6 transition-opacity duration-150 ${isPending ? "opacity-60" : "opacity-100"}`}
+            >
               {paginatedReleases.map((release, index) => (
                 <ReleaseCard
                   key={release.id}
@@ -490,7 +517,7 @@ export default function FilteredReleases({ releases }: FilteredReleasesProps) {
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={handlePageChange}
             />
 
             <div className="mt-8 text-center text-sm text-gray-500">
