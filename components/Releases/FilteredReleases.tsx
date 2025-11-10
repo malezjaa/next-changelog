@@ -204,6 +204,8 @@ const ReleaseCard = React.memo(
   },
 );
 
+ReleaseCard.displayName = 'ReleaseCard';
+
 const PaginationButton = React.memo(
   ({
     page,
@@ -233,6 +235,8 @@ const PaginationButton = React.memo(
     );
   },
 );
+
+PaginationButton.displayName = 'PaginationButton';
 
 const Pagination = React.memo(
   ({
@@ -284,6 +288,8 @@ const Pagination = React.memo(
     );
   },
 );
+
+Pagination.displayName = 'Pagination';
 
 const EmptyState = ({ searchTerm }: { searchTerm?: string }) => (
   <div className="text-center py-8">
