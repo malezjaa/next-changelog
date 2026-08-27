@@ -1,66 +1,53 @@
 export default function Skeleton() {
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="w-full mb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 border border-accent2 rounded-lg bg-dark animate-pulse">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex flex-col gap-2">
-              <div className="h-4 bg-lighter rounded w-24"></div>
-              <div className="h-8 bg-lighter rounded w-16"></div>
-              <div className="h-3 bg-lighter rounded w-20"></div>
+    <div className="mx-auto w-full max-w-5xl animate-fade-up" aria-busy="true">
+      <div className="mb-10 w-full">
+        <div className="mb-3 h-3 w-28 animate-pulse rounded bg-obsidian" />
+        <div className="instrument-card grid grid-cols-2 overflow-hidden md:grid-cols-4">
+          {["w-16", "w-12", "w-12", "w-24"].map((width, index) => (
+            <div
+              key={`${width}-${index}`}
+              className="border-b border-graphite p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"
+            >
+              <div className="h-3 w-20 animate-pulse rounded bg-obsidian" />
+              <div
+                className={`mt-5 h-8 ${width} animate-pulse rounded bg-obsidian`}
+              />
+              <div className="mt-2 h-2.5 w-24 animate-pulse rounded bg-obsidian" />
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="h-12 bg-dark border border-accent2 rounded flex-1 animate-pulse"></div>
-        <div className="h-12 bg-dark border border-accent2 rounded w-36 animate-pulse"></div>
-      </div>
-
-      <div className="mb-6">
-        <div className="h-6 bg-dark rounded w-32 mb-3 animate-pulse"></div>
-        <div className="flex gap-4">
-          <div className="h-6 bg-dark rounded w-24 animate-pulse"></div>
-          <div className="h-6 bg-dark rounded w-24 animate-pulse"></div>
+      <div className="mb-6 flex flex-col gap-3 border-b border-graphite pb-6 md:flex-row md:items-center">
+        <div className="h-10 w-full animate-pulse rounded border border-graphite bg-carbon sm:max-w-md" />
+        <div className="flex gap-2 self-start md:ml-auto">
+          <div className="h-10 w-32 animate-pulse rounded border border-graphite bg-carbon" />
+          <div className="h-10 w-36 animate-pulse rounded border border-graphite bg-carbon" />
         </div>
       </div>
 
-      {[...Array(3)].map((_, i) => (
+      {[0, 1, 2].map((index) => (
         <div
-          key={i}
-          className="mb-6 p-4 border border-accent2 rounded-lg bg-dark animate-pulse"
+          key={index}
+          className="instrument-card mb-5 animate-pulse p-5 sm:p-6"
         >
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex-1">
-              <div className="h-6 bg-lighter rounded w-48 mb-3"></div>
-              <div className="flex gap-2">
-                <div className="h-5 bg-lighter rounded w-20"></div>
-                <div className="h-5 bg-lighter rounded w-16"></div>
-              </div>
+          <div className="flex items-start justify-between gap-4">
+            <div className="w-full">
+              <div className="mb-3 h-5 w-20 rounded bg-obsidian" />
+              <div className="h-7 w-3/4 rounded bg-obsidian" />
             </div>
-            <div className="flex gap-2 ml-4">
-              <div className="h-8 w-8 bg-lighter rounded"></div>
-              <div className="h-8 w-8 bg-lighter rounded"></div>
-            </div>
+            <div className="h-8 w-16 rounded bg-obsidian" />
           </div>
-
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 bg-lighter rounded-full"></div>
-            <div className="h-4 bg-lighter rounded w-48"></div>
-          </div>
-
+          <div className="mt-5 h-5 w-44 rounded bg-obsidian" />
+          <div className="my-5 border-t border-graphite" />
           <div className="space-y-2">
-            <div className="h-4 bg-lighter rounded w-full"></div>
-            <div className="h-4 bg-lighter rounded w-5/6"></div>
-            <div className="h-4 bg-lighter rounded w-4/6"></div>
+            <div className="h-3.5 w-full rounded bg-obsidian" />
+            <div className="h-3.5 w-5/6 rounded bg-obsidian" />
+            <div className="h-3.5 w-2/3 rounded bg-obsidian" />
           </div>
         </div>
       ))}
-
-      <div className="mt-8 p-4 bg-dark border border-accent2 rounded-lg animate-pulse">
-        <div className="h-4 bg-lighter rounded w-64 mx-auto"></div>
-      </div>
     </div>
   );
 }

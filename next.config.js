@@ -9,6 +9,7 @@ const nextConfig = {
       },
     ],
   },
+  agentRules: false,
 };
 
 module.exports = nextConfig;

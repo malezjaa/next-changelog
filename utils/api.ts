@@ -35,7 +35,6 @@ export const getNextJsReleases = async (): Promise<Release[]> => {
 
       const response = await fetch(url.toString(), {
         headers,
-        credentials: "include",
         next: {
           revalidate: 1200,
         },
@@ -72,27 +71,25 @@ export const getNextJsReleases = async (): Promise<Release[]> => {
       allReleases[allReleases.length - 1]?.created_at,
     );
     if (oldestRelease >= oneYearAgo && releases2.length === 100) {
-      let page = 3;
       const maxPages = 5;
 
-      while (page <= maxPages) {
-        const releases = await fetchReleases(page);
+      const remainingPages = await Promise.all(
+        Array.from({ length: maxPages - 2 }, (_, index) =>
+          fetchReleases(index + 3),
+        ),
+      );
 
-        if (releases.length === 0) break;
+      for (const releases of remainingPages) {
+        if (releases.length === 0) continue;
 
-        let reachedOldReleases = false;
         for (const release of releases) {
           const releaseDate = new Date(release.created_at);
           if (releaseDate >= oneYearAgo) {
             recentReleases.push(release);
           } else {
-            reachedOldReleases = true;
             break;
           }
         }
-
-        if (reachedOldReleases) break;
-        page++;
       }
     }
 

@@ -1,7 +1,8 @@
-export default function NextJsIcon() {
+export default function NextJsIcon({ className }: { className?: string }) {
   return (
     <svg
       aria-label="Next.js logotype"
+      className={className}
       height="18"
       role="img"
       viewBox="0 0 394 79"
